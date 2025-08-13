@@ -105,7 +105,7 @@
 //! }
 //! ```
 //!
-//! [MIT license]: https://github.com/gostonefire/spa-sra/blob/main/LICENSE
+//! [MIT license]: https://github.com/gostonefire/spa_sra/blob/main/LICENSE
 //! [Reda, I.; Andreas, A. (2003). Solar Position Algorithm for Solar Radiation Applications. 55 pp.; NREL Report No. TP-560-34302, Revised January 2008.]: http://www.nrel.gov/docs/fy08osti/34302.pdf
 //! [chrono]: https://docs.rs/chrono/latest/chrono/
 
