@@ -1,0 +1,17 @@
+[package]
+name = "spa_sra"
+version = "0.2.4"
+description = "Solar Position Algorithm for Solar Radiation Applications"
+homepage = "https://github.com/gostonefire/spa_sra"
+repository = "https://github.com/gostonefire/spa_sra"
+keywords = ["solar", "algorithm"]
+categories = ["science"]
+readme = "README.md"
+license-file = "LICENSE"
+edition = "2021"
+
+[dependencies]
+chrono = {version = "0.4", optional = true}
+
+[features]
+chrono_0_4 = ["dep:chrono"]
