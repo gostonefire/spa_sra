@@ -139,12 +139,11 @@ impl Input<Std> {
 impl<T: Clone> Input<T> {
     /// Creates a new timezone aware [Input] struct where some values that doesn't change often are defaulted
     ///
-    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
-    ///
     /// # Arguments
     ///
     /// * 'tz' - a Chrono [TimeZone]
     #[cfg(feature = "chrono_0_4")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "chrono_0_4")))]
     pub fn new_tz(tz: T) -> Self
     where T: TimeZone {
         Input {
@@ -174,12 +173,11 @@ impl<T: Clone> Input<T> {
     /// Creates a new timezone aware [Input] struct where some values that doesn't change often are defaulted.
     /// Also sets all date, time and timezone fields from the given date_time parameter.
     ///
-    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
-    ///
     /// # Arguments
     ///
     /// * 'date_time' - a [DateTime] object including the time zone
     #[cfg(feature = "chrono_0_4")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "chrono_0_4")))]
     pub fn from_date_time(date_time: DateTime<T>) -> Self
     where T: TimeZone {
         Input {
@@ -208,12 +206,11 @@ impl<T: Clone> Input<T> {
 
     /// Sets all date, time and timezone fields from the given date_time parameter.
     ///
-    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
-    ///
     /// # Arguments
     ///
     /// * 'date_time' - a [DateTime] object including the time zone
     #[cfg(feature = "chrono_0_4")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "chrono_0_4")))]
     pub fn date_time(&mut self, date_time: DateTime<T>)
     where T: TimeZone {
         self.tz = date_time.timezone();
@@ -483,9 +480,8 @@ impl<T: Clone> SpaData<T> {
 
     /// Returns the sunrise as a [DateTime] object including nanoseconds
     ///
-    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
-    ///
     #[cfg(feature = "chrono_0_4")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "chrono_0_4")))]
     pub fn get_sunrise(&self) -> DateTime<T>
     where T: TimeZone {
         let time_comp = get_time_components(self.spa_za_rts.sunrise);
@@ -497,9 +493,8 @@ impl<T: Clone> SpaData<T> {
 
     /// Returns the sunset as a [DateTime] object including nanoseconds
     ///
-    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
-    ///
     #[cfg(feature = "chrono_0_4")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "chrono_0_4")))]
     pub fn get_sunset(&self) -> DateTime<T>
     where T: TimeZone {
         let time_comp = get_time_components(self.spa_za_rts.sunset);
@@ -511,9 +506,8 @@ impl<T: Clone> SpaData<T> {
 
     /// Returns the suntransit as a [DateTime] object including nanoseconds
     ///
-    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
-    ///
     #[cfg(feature = "chrono_0_4")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "chrono_0_4")))]
     pub fn get_suntransit(&self) -> DateTime<T>
     where T: TimeZone {
         let time_comp = get_time_components(self.spa_za_rts.suntransit);

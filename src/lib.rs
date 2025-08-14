@@ -230,8 +230,6 @@ impl<T: Clone> SpaBuilder<T> {
     /// * [`SpaBuilder::delta_ut1`] / [`Input::delta_ut1`]: 0.1 (doesn't change that often)
     /// * [`SpaBuilder::delta_t`] / [`Input::delta_t`]: 69.084 (doesn't change that often)
     ///
-    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
-    ///
     /// # Arguments
     ///
     /// * 'date_time' - a [DateTime] object including the time zone
@@ -283,6 +281,7 @@ impl<T: Clone> SpaBuilder<T> {
     /// ```
     ///
     #[cfg(feature = "chrono_0_4")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "chrono_0_4")))]
     pub fn from_date_time(date_time: DateTime<T>) -> Self
     where T: TimeZone {
         let mut input = Input::new_tz(date_time.timezone());
@@ -366,12 +365,11 @@ impl<T: Clone> SpaBuilder<T> {
     ///
     /// This is useful if the builder was created using [SpaBuilder::from_input]
     ///
-    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
-    ///
     /// # Arguments
     ///
     /// * 'date_time' - a [DateTime] object including the time zone
     #[cfg(feature = "chrono_0_4")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "chrono_0_4")))]
     pub fn date_time(mut self, date_time: DateTime<T>) -> Self
     where T: TimeZone {
         self.input.year= date_time.year() as i64;
