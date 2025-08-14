@@ -117,6 +117,8 @@ pub struct Input<T: Clone> {
     _phantom: PhantomData<T>,
 }
 
+/// Implementation of the standard concrete typed Input
+///
 impl Input<Std> {
     /// Creates a new standard [Input] struct where some values that doesn't change often are defaulted
     ///
@@ -132,8 +134,9 @@ impl Input<Std> {
     }
 }
 
-#[cfg(feature = "chrono_0_4")]
-impl<T: TimeZone> Input<T> {
+/// Implementation of common and feature specific methods
+///
+impl<T: Clone> Input<T> {
     /// Creates a new timezone aware [Input] struct where some values that doesn't change often are defaulted
     ///
     /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
@@ -141,7 +144,9 @@ impl<T: TimeZone> Input<T> {
     /// # Arguments
     ///
     /// * 'tz' - a Chrono [TimeZone]
-    pub fn new_tz(tz: T) -> Self {
+    #[cfg(feature = "chrono_0_4")]
+    pub fn new_tz(tz: T) -> Self
+    where T: TimeZone {
         Input {
             year: 0,
             month: 0,
@@ -174,7 +179,9 @@ impl<T: TimeZone> Input<T> {
     /// # Arguments
     ///
     /// * 'date_time' - a [DateTime] object including the time zone
-    pub fn from_date_time(date_time: DateTime<T>) -> Self {
+    #[cfg(feature = "chrono_0_4")]
+    pub fn from_date_time(date_time: DateTime<T>) -> Self
+    where T: TimeZone {
         Input {
             year: date_time.year() as i64,
             month: date_time.month() as i64,
@@ -206,7 +213,9 @@ impl<T: TimeZone> Input<T> {
     /// # Arguments
     ///
     /// * 'date_time' - a [DateTime] object including the time zone
-    pub fn date_time(&mut self, date_time: DateTime<T>) {
+    #[cfg(feature = "chrono_0_4")]
+    pub fn date_time(&mut self, date_time: DateTime<T>)
+    where T: TimeZone {
         self.tz = date_time.timezone();
         self.year= date_time.year() as i64;
         self.month = date_time.month() as i64;
@@ -216,9 +225,7 @@ impl<T: TimeZone> Input<T> {
         self.second = date_time.second() as f64 + date_time.nanosecond() as f64 / 1_000_000_000f64;
         self.timezone = date_time.offset().fix().local_minus_utc() as f64 / 3600.0;
     }
-}
 
-impl<T: Clone> Input<T> {
     /// Validates inputs
     ///
     fn validate_inputs(&self) -> i64 {
@@ -414,49 +421,6 @@ pub struct SpaData<T: Clone> {
     pub spa_za_rts: SpaZaRts,
 }
 
-/// Implementation of Chrono_0_4 specific methods
-///
-#[cfg(feature = "chrono_0_4")]
-impl<T: TimeZone> SpaData<T> {
-    /// Returns the sunrise as a [DateTime] object including nanoseconds
-    ///
-    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
-    ///
-    pub fn get_sunrise(&self) -> DateTime<T> {
-        let time_comp = get_time_components(self.spa_za_rts.sunrise);
-
-        self.input.tz.with_ymd_and_hms(self.input.year as i32, self.input.month as u32, self.input.day as u32,
-                            time_comp.0, time_comp.1, time_comp.2).unwrap()
-            .with_nanosecond(time_comp.3).unwrap()
-    }
-
-    /// Returns the sunset as a [DateTime] object including nanoseconds
-    ///
-    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
-    ///
-    pub fn get_sunset(&self) -> DateTime<T> {
-        let time_comp = get_time_components(self.spa_za_rts.sunset);
-
-        self.input.tz.with_ymd_and_hms(self.input.year as i32, self.input.month as u32, self.input.day as u32,
-                            time_comp.0, time_comp.1, time_comp.2).unwrap()
-            .with_nanosecond(time_comp.3).unwrap()
-    }
-
-    /// Returns the suntransit as a [DateTime] object including nanoseconds
-    ///
-    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
-    ///
-    pub fn get_suntransit(&self) -> DateTime<T> {
-        let time_comp = get_time_components(self.spa_za_rts.suntransit);
-
-        self.input.tz.with_ymd_and_hms(self.input.year as i32, self.input.month as u32, self.input.day as u32,
-                            time_comp.0, time_comp.1, time_comp.2).unwrap()
-            .with_nanosecond(time_comp.3).unwrap()
-    }
-}
-
-/// Implementation of common methods for all T
-///
 impl<T: Clone> SpaData<T> {
     /// Returns a new [SpaData] struct
     ///
@@ -515,6 +479,48 @@ impl<T: Clone> SpaData<T> {
         } else {
             Err(SpaError{ code: result, message: MESSAGES[result as usize] })
         }
+    }
+
+    /// Returns the sunrise as a [DateTime] object including nanoseconds
+    ///
+    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
+    ///
+    #[cfg(feature = "chrono_0_4")]
+    pub fn get_sunrise(&self) -> DateTime<T>
+    where T: TimeZone {
+        let time_comp = get_time_components(self.spa_za_rts.sunrise);
+
+        self.input.tz.with_ymd_and_hms(self.input.year as i32, self.input.month as u32, self.input.day as u32,
+                                       time_comp.0, time_comp.1, time_comp.2).unwrap()
+            .with_nanosecond(time_comp.3).unwrap()
+    }
+
+    /// Returns the sunset as a [DateTime] object including nanoseconds
+    ///
+    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
+    ///
+    #[cfg(feature = "chrono_0_4")]
+    pub fn get_sunset(&self) -> DateTime<T>
+    where T: TimeZone {
+        let time_comp = get_time_components(self.spa_za_rts.sunset);
+
+        self.input.tz.with_ymd_and_hms(self.input.year as i32, self.input.month as u32, self.input.day as u32,
+                                       time_comp.0, time_comp.1, time_comp.2).unwrap()
+            .with_nanosecond(time_comp.3).unwrap()
+    }
+
+    /// Returns the suntransit as a [DateTime] object including nanoseconds
+    ///
+    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
+    ///
+    #[cfg(feature = "chrono_0_4")]
+    pub fn get_suntransit(&self) -> DateTime<T>
+    where T: TimeZone {
+        let time_comp = get_time_components(self.spa_za_rts.suntransit);
+
+        self.input.tz.with_ymd_and_hms(self.input.year as i32, self.input.month as u32, self.input.day as u32,
+                                       time_comp.0, time_comp.1, time_comp.2).unwrap()
+            .with_nanosecond(time_comp.3).unwrap()
     }
 
     /// Calculate Equation of Time (EOT) and Sun Rise, Transit, & Set (RTS)
