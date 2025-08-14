@@ -49,10 +49,14 @@
 //! "chrono_0_4" feature is included.
 //! ```rust
 //! use std::ops::Add;
+//! # #[cfg(feature = "chrono_0_4")]
 //! use chrono::{DateTime, Local, TimeDelta, TimeZone};
 //! use spa_sra::errors::SpaError;
 //! use spa_sra::spa::{Function, Input, SpaData};
+//! # #[cfg(not(feature = "chrono_0_4"))]
+//! # fn main() {}
 //!
+//! # #[cfg(feature = "chrono_0_4")]
 //! fn main() {
 //!
 //!     match get_day_incidence() {
@@ -65,6 +69,7 @@
 //!     }
 //! }
 //!
+//! # #[cfg(feature = "chrono_0_4")]
 //! fn get_day_incidence() -> Result<(DateTime<Local>, DateTime<Local>, Vec<f64>), SpaError> {
 //!     let mut result: Vec<f64> = Vec::new();
 //!
