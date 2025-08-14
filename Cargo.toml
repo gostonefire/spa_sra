@@ -1,6 +1,6 @@
 [package]
 name = "spa_sra"
-version = "0.3.0"
+version = "0.3.1"
 description = "Solar Position Algorithm for Solar Radiation Applications"
 homepage = "https://github.com/gostonefire/spa_sra"
 repository = "https://github.com/gostonefire/spa_sra"
@@ -19,4 +19,4 @@ chrono_0_4 = ["dep:chrono"]
 
 [package.metadata.docs.rs]
 all-features = true
-cargo-args = ["--no-deps"]
+rustdoc-args = ["--cfg", "docsrs"]
