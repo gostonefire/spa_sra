@@ -397,7 +397,7 @@ impl SpaZaRts {
 }
 
 /// The main SpaData struct that holds both input data and structs for result data
-/// after a Spa calculation
+/// after an SPA calculation
 ///
 #[derive(Clone)]
 pub struct SpaData<T: Clone> {

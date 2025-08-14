@@ -22,24 +22,31 @@
 //! ## Usage overview
 //!
 //! The library has two main entry points:
-//! * Using the [SpaBuilder] (which has an optional flavor if using the library with the chrono_0_4 feature)
+//! * Using the [SpaBuilder] for simple use-cases.
 //! * Using the [SpaData] struct and its sub-structs directly, which may be favourable for a more fine-grained integration.
-//!
-//! If choosing to use the chrono_0_4 feature then date, time and timezone is managed through the [chrono] crate.
-//! If however the library is used without the chrono_0_4 feature, there are no external crates being
-//! imported, and date, time and timezone are entered as simple numbers
 //!
 //! It is possible to use a hybrid between the [SpaBuilder] and the [SpaData] struct.
 //!
 //! However, if doing a hybrid when also using the chrono_0_4 feature it gets slightly more complicated.
 //! Changing date and time directly in the [Input] struct doesn't automatically update the timezone
 //! offset numeric field (which is used by the SPA-SRA algorithm) and can change between two hours
-//! due to sunlight saving times.
+//! due to sunlight saving times
 //!
-//! ## Example using the SpaData struct
+//! ## Features
+//!
+//! * "chrono_0_4" - adds some [chrono] dependent constructors to both [SpaBuilder] and [SpaData],
+//! as well as some methods. This makes date, time and timezone management easier, as well as providing easier
+//! access to e.g. sunset, sunrise and sun transit data. But it also brings in the [chrono] crate to the build.
+//!
+//! ## Examples using SpaBuilder
+//!
+//! See examples in the [SpaBuilder] struct section
+//!
+//! ## Example using the SpaData struct directly
 //!
 //! The code below uses the SpaData struct directly, instead of using the builder, to sweep
-//! over one day and report a vector of incidence together with sunrise and sunset.
+//! over one day and report a vector of incidence together with sunrise and sunset. It assumes the
+//! "chrono_0_4" feature is included.
 //! ```rust
 //! use std::ops::Add;
 //! use chrono::{DateTime, Local, TimeDelta, TimeZone};
@@ -132,7 +139,7 @@ pub struct SpaBuilder<T: Clone> {
     input: Input<T>,
 }
 
-/// Implementation of Std specific methods
+/// Implementation of the standard concrete typed SpaBuilder
 ///
 impl SpaBuilder<Std> {
     /// Creates a new SpaBuilder.
@@ -200,70 +207,16 @@ impl SpaBuilder<Std> {
     /// }
     /// ```
     ///
-    pub fn new() -> Self {
-        Self {
+    pub fn new() -> SpaBuilder<Std> {
+        SpaBuilder {
             input: Input::new_std(),
         }
     }
-
-    /// Sets date
-    /// 
-    /// # Arguments
-    /// 
-    /// * 'year' - 4-digit year, valid range: -2000 to 6000
-    /// * 'month' - 2-digit month, valid range: 1 to  12
-    /// * 'day' - 2-digit day, valid range: 1 to  31
-    pub fn date(mut self, year: i64, month: i64, day: i64) -> Result<Self, SpaError> {
-        if year        < -2000   || year        > 6000   { return Err(SpaError{ code: 1, message: MESSAGES[1] }) };
-        if month       < 1       || month       > 12     { return Err(SpaError{ code: 2, message: MESSAGES[2] }) };
-        if day         < 1       || day         > 31     { return Err(SpaError{ code: 3, message: MESSAGES[3] }) };
-
-        self.input.year = year;
-        self.input.month = month;
-        self.input.day = day;
-
-        Ok(self)
-    }
-
-    /// Sets time
-    ///
-    /// # Arguments
-    ///
-    /// * 'hour' - Observer local hour, valid range: 0 to  24
-    /// * 'minute' - Observer local minute, valid range: 0 to  59
-    /// * 'second' - Observer local second, valid range: 0 to <60 (accepts fraction)
-    pub fn time(mut self, hour: i64, minute: i64, second: f64) -> Result<Self, SpaError> {
-        if hour        < 0       || hour        > 24     { return Err(SpaError{ code: 4, message: MESSAGES[4] }) };
-        if minute      < 0       || minute      > 59     { return Err(SpaError{ code: 5, message: MESSAGES[5] }) };
-        if second      < 0.0     || second      >=60.0   { return Err(SpaError{ code: 6, message: MESSAGES[6] }) };
-        if hour        == 24     && minute      > 0      { return Err(SpaError{ code: 5, message: MESSAGES[5] }) };
-        if hour        == 24     && second      > 0.0    { return Err(SpaError{ code: 6, message: MESSAGES[6] }) };
-
-        self.input.hour = hour;
-        self.input.minute = minute;
-        self.input.second = second;
-
-        Ok(self)
-    }
-
-    /// Sets observer time zone (negative west of Greenwich)
-    ///
-    /// # Arguments
-    /// 
-    /// * 'timezone' - valid range: -18 to 18 hours
-    pub fn timezone(mut self, timezone: f64) -> Result<Self, SpaError> {
-        if timezone.abs()      > 18.0       { return Err(SpaError{ code: 8, message: MESSAGES[8] }) };
-
-        self.input.timezone = timezone;
-        
-        Ok(self)
-    }
 }
 
-/// Implementation of chrono_0_4 specific methods
+/// Implementation of common and feature specific methods
 ///
-#[cfg(feature = "chrono_0_4")]
-impl <T: TimeZone>SpaBuilder<T> {
+impl<T: Clone> SpaBuilder<T> {
     /// Creates a new timezone aware SpaBuilder from the given [DateTime]
     ///
     /// These fields will have quite valid defaults, at least within the neighborhood of 2025-07-10, those are:
@@ -323,7 +276,9 @@ impl <T: TimeZone>SpaBuilder<T> {
     /// }
     /// ```
     ///
-    pub fn from_date_time(date_time: DateTime<T>) -> Self {
+    #[cfg(feature = "chrono_0_4")]
+    pub fn from_date_time(date_time: DateTime<T>) -> Self
+    where T: TimeZone {
         let mut input = Input::new_tz(date_time.timezone());
         input.year= date_time.year() as i64;
         input.month = date_time.month() as i64;
@@ -338,32 +293,6 @@ impl <T: TimeZone>SpaBuilder<T> {
         }
     }
 
-    /// Sets all date, time and timezone fields from the given date_time parameter.
-    ///
-    /// This is useful if the builder was created using [SpaBuilder::from_input]
-    ///
-    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
-    ///
-    /// # Arguments
-    ///
-    /// * 'date_time' - a [DateTime] object including the time zone
-    pub fn date_time(mut self, date_time: DateTime<T>) -> Self {
-        self.input.year= date_time.year() as i64;
-        self.input.month = date_time.month() as i64;
-        self.input.day = date_time.day() as i64;
-        self.input.hour = date_time.hour() as i64;
-        self.input.minute = date_time.minute() as i64;
-        self.input.second = date_time.second() as f64 + date_time.nanosecond() as f64 / 1_000_000_000f64;
-        self.input.timezone = date_time.offset().fix().local_minus_utc() as f64 / 3600.0;
-        self.input.tz = date_time.timezone();
-
-        self
-    }
-}
-
-/// Implementation of common methods for all T
-///
-impl<T: Clone> SpaBuilder<T> {
     /// Creates a new SpaBuilder from an existing [Input] struct.
     ///
     /// Useful to for instance re-run calculations after just changing one or a few settings
@@ -425,6 +354,83 @@ impl<T: Clone> SpaBuilder<T> {
         Self {
             input,
         }
+    }
+
+    /// Sets all date, time and timezone fields from the given date_time parameter.
+    ///
+    /// This is useful if the builder was created using [SpaBuilder::from_input]
+    ///
+    /// This method is dependent on the feature "chrono_0_4" which will include the [chrono] crate.
+    ///
+    /// # Arguments
+    ///
+    /// * 'date_time' - a [DateTime] object including the time zone
+    #[cfg(feature = "chrono_0_4")]
+    pub fn date_time(mut self, date_time: DateTime<T>) -> Self
+    where T: TimeZone {
+        self.input.year= date_time.year() as i64;
+        self.input.month = date_time.month() as i64;
+        self.input.day = date_time.day() as i64;
+        self.input.hour = date_time.hour() as i64;
+        self.input.minute = date_time.minute() as i64;
+        self.input.second = date_time.second() as f64 + date_time.nanosecond() as f64 / 1_000_000_000f64;
+        self.input.timezone = date_time.offset().fix().local_minus_utc() as f64 / 3600.0;
+        self.input.tz = date_time.timezone();
+
+        self
+    }
+
+    /// Sets date
+    /// 
+    /// # Arguments
+    /// 
+    /// * 'year' - 4-digit year, valid range: -2000 to 6000
+    /// * 'month' - 2-digit month, valid range: 1 to  12
+    /// * 'day' - 2-digit day, valid range: 1 to  31
+    pub fn date(mut self, year: i64, month: i64, day: i64) -> Result<Self, SpaError> {
+        if year        < -2000   || year        > 6000   { return Err(SpaError{ code: 1, message: MESSAGES[1] }) };
+        if month       < 1       || month       > 12     { return Err(SpaError{ code: 2, message: MESSAGES[2] }) };
+        if day         < 1       || day         > 31     { return Err(SpaError{ code: 3, message: MESSAGES[3] }) };
+
+        self.input.year = year;
+        self.input.month = month;
+        self.input.day = day;
+
+        Ok(self)
+    }
+
+    /// Sets time
+    ///
+    /// # Arguments
+    ///
+    /// * 'hour' - Observer local hour, valid range: 0 to  24
+    /// * 'minute' - Observer local minute, valid range: 0 to  59
+    /// * 'second' - Observer local second, valid range: 0 to <60 (accepts fraction)
+    pub fn time(mut self, hour: i64, minute: i64, second: f64) -> Result<Self, SpaError> {
+        if hour        < 0       || hour        > 24     { return Err(SpaError{ code: 4, message: MESSAGES[4] }) };
+        if minute      < 0       || minute      > 59     { return Err(SpaError{ code: 5, message: MESSAGES[5] }) };
+        if second      < 0.0     || second      >=60.0   { return Err(SpaError{ code: 6, message: MESSAGES[6] }) };
+        if hour        == 24     && minute      > 0      { return Err(SpaError{ code: 5, message: MESSAGES[5] }) };
+        if hour        == 24     && second      > 0.0    { return Err(SpaError{ code: 6, message: MESSAGES[6] }) };
+
+        self.input.hour = hour;
+        self.input.minute = minute;
+        self.input.second = second;
+
+        Ok(self)
+    }
+
+    /// Sets observer time zone (negative west of Greenwich)
+    ///
+    /// # Arguments
+    /// 
+    /// * 'timezone' - valid range: -18 to 18 hours
+    pub fn timezone(mut self, timezone: f64) -> Result<Self, SpaError> {
+        if timezone.abs()      > 18.0       { return Err(SpaError{ code: 8, message: MESSAGES[8] }) };
+
+        self.input.timezone = timezone;
+        
+        Ok(self)
     }
 
     /// Sets observer latitude (negative south of the equator) and longitude (negative west of Greenwich)
@@ -594,4 +600,5 @@ impl<T: Clone> SpaBuilder<T> {
 
         Ok(spa_data)
     }
+
 }
