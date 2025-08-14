@@ -1,9 +1,10 @@
 [package]
 name = "spa_sra"
-version = "0.2.5"
+version = "0.3.0"
 description = "Solar Position Algorithm for Solar Radiation Applications"
 homepage = "https://github.com/gostonefire/spa_sra"
 repository = "https://github.com/gostonefire/spa_sra"
+documentation = "https://docs.rs/spa_sra"
 keywords = ["solar", "algorithm", "photovoltaics"]
 categories = ["science"]
 readme = "README.md"
