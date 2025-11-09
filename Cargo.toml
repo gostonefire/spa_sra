@@ -1,6 +1,6 @@
 [package]
 name = "spa_sra"
-version = "0.3.2"
+version = "0.3.3"
 description = "Solar Position Algorithm for Solar Radiation Applications"
 homepage = "https://github.com/gostonefire/spa_sra"
 repository = "https://github.com/gostonefire/spa_sra"
