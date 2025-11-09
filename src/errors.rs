@@ -41,6 +41,7 @@ pub(crate) const MESSAGES: [&str;18] = [
 /// * 14 -> Surface slope (measured from the horizontal plane) outside valid range: -360 to 360 degrees
 /// * 15 -> Surface azimuth rotation (measured from south to projection of surface normal on horizontal plane, negative east) outside valid range: -360 to 360 degrees
 /// * 16 -> Atmospheric refraction at sunrise and sunset (0.5667 deg is typical) outside valid range: -5 to 5 degrees
+#[derive(Debug)]
 pub struct SpaError {
     /// Error code
     pub code: i64,
@@ -54,3 +55,4 @@ impl Display for SpaError {
     }
 }
 
+impl std::error::Error for SpaError {}
